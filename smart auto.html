@@ -1,0 +1,217 @@
+<!DOCTYPE html><html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SmartAuto - Autorickshaw Booking</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background: #f2f2f2;
+      overflow-x: hidden;
+    }
+    header {
+      background-color: #28a745;
+      color: white;
+      padding: 20px;
+      text-align: center;
+      animation: slideInTop 1s ease-out;
+    }
+    @keyframes slideInTop {
+      from { transform: translateY(-100%); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+    .hero {
+      background: #dff0d8;
+      padding: 50px;
+      text-align: center;
+      animation: fadeIn 1.5s ease-in;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    .hero h1 {
+      font-size: 3em;
+      margin-bottom: 10px;
+    }
+    .intro {
+      max-width: 800px;
+      margin: 20px auto;
+      padding: 20px;
+      background: #ffffff;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      font-size: 1.1em;
+      animation: zoomIn 1s ease-in-out;
+    }
+    .ride-section {
+      padding: 30px;
+      background: white;
+      max-width: 800px;
+      margin: 20px auto;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      border-radius: 8px;
+      animation: zoomIn 1s ease-in-out;
+    }
+    @keyframes zoomIn {
+      from { transform: scale(0.9); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+    .ride-section h2 {
+      color: #28a745;
+      text-align: center;
+    }
+    .ride-form {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      margin-top: 20px;
+    }
+    .ride-form input, .ride-form select {
+      padding: 10px;
+      font-size: 1em;
+    }
+    .ride-form button {
+      background-color: #28a745;
+      color: white;
+      border: none;
+      padding: 10px;
+      cursor: pointer;
+      font-size: 1em;
+      border-radius: 4px;
+      transition: background-color 0.3s;
+    }
+    .ride-form button:hover {
+      background-color: #218838;
+    }
+    .rides-available {
+      margin-top: 30px;
+    }
+    .ride-card {
+      border: 1px solid #ccc;
+      padding: 15px;
+      border-radius: 6px;
+      margin-bottom: 15px;
+      transition: transform 0.3s;
+    }
+    .ride-card:hover {
+      transform: scale(1.02);
+    }
+    #map {
+      height: 300px;
+      width: 100%;
+      border-radius: 8px;
+      margin-top: 20px;
+    }
+    .confirmation-page {
+      padding: 30px;
+      background: #ffffff;
+      max-width: 800px;
+      margin: 20px auto;
+      text-align: center;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      animation: fadeIn 1s ease-in;
+    }
+  </style>
+  <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_GOOGLE_MAPS_API_KEY"></script>
+</head>
+<body>
+  <header>
+    <h1>SmartAuto</h1>
+    <p>Your trusted autorickshaw booking platform</p>
+  </header>  <section class="hero">
+    <h1>Book Your Ride Instantly</h1>
+    <p>Quick, safe, and reliable rides at your fingertips</p>
+  </section>  <section class="intro">
+    <p>
+      Autorickshaws have long been a vital part of urban transportation, offering affordable and convenient travel options for millions. SmartAuto is a modern take on this traditional mode of transport. Our platform connects riders with nearby autorickshaw drivers through a user-friendly app and website, ensuring seamless travel within the city. Whether you're commuting to work or running errands, SmartAuto guarantees a safe, affordable, and eco-friendly journey at your convenience.
+    </p>
+  </section>  <section class="ride-section">
+    <h2>Plan Your Ride</h2>
+    <form class="ride-form" onsubmit="showAvailableRides(event)">
+      <input type="text" id="pickup" placeholder="Enter Pickup Location" required>
+      <input type="text" id="drop" placeholder="Enter Drop Location" required>
+      <select id="rideType" required>
+        <option value="">Select Ride Type</option>
+        <option value="regular">Regular Auto - ₹50/km</option>
+        <option value="premium">Premium Auto - ₹70/km</option>
+      </select>
+      <button type="submit">Check Availability</button>
+    </form><div id="map"></div>
+
+<div class="rides-available" id="rides">
+  <!-- Rides will appear here -->
+</div>
+
+  </section>  <div class="confirmation-page" id="confirmation" style="display: none;">
+    <h2>Ride Confirmed!</h2>
+    <p>Your autorickshaw is on its way. Thank you for booking with SmartAuto.</p>
+  </div>  <script>
+    function showAvailableRides(event) {
+      event.preventDefault();
+      const pickup = document.getElementById("pickup").value;
+      const drop = document.getElementById("drop").value;
+      const rideType = document.getElementById("rideType").value;
+
+      const rides = document.getElementById("rides");
+      rides.innerHTML = `<h3>Available Rides from ${pickup} to ${drop}</h3>`;
+
+      let pricePerKm = rideType === "premium" ? 70 : 50;
+
+      const sampleRides = [
+        { driver: "Rajesh Kumar", type: rideType, distance: 2 },
+        { driver: "Anita Sharma", type: rideType, distance: 3 }
+      ];
+
+      sampleRides.forEach(ride => {
+        const card = document.createElement("div");
+        card.className = "ride-card";
+        card.innerHTML = `
+          <strong>Driver:</strong> ${ride.driver}<br>
+          <strong>Type:</strong> ${ride.type === "premium" ? "Premium Auto" : "Regular Auto"}<br>
+          <strong>Price:</strong> ₹${ride.distance * pricePerKm} for ${ride.distance} km<br>
+          <button onclick="confirmRide()">Select Ride</button>
+        `;
+        rides.appendChild(card);
+      });
+    }
+
+    function confirmRide() {
+      document.querySelector('.ride-section').style.display = 'none';
+      document.getElementById('confirmation').style.display = 'block';
+    }
+
+    function initMap() {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(position => {
+          const userLocation = {
+            lat: position.coords.latitude,
+            lng: position.coords.longitude
+          };
+
+          const map = new google.maps.Map(document.getElementById("map"), {
+            center: userLocation,
+            zoom: 15
+          });
+
+          const marker = new google.maps.Marker({
+            position: userLocation,
+            map: map,
+            title: "Your Location",
+            animation: google.maps.Animation.BOUNCE
+          });
+
+        }, () => {
+          alert("Unable to fetch your location.");
+        });
+      } else {
+        alert("Geolocation is not supported by this browser.");
+      }
+    }
+
+    window.onload = initMap;
+  </script></body>
+</html>
